@@ -4,6 +4,7 @@ from decimal import Decimal
 from pydantic import BaseModel, SecretStr,EmailStr,Field,validator
 import sqlite3
 from sqlite3 import Error
+from flask import Flask, request
 
 app = FastAPI()
 
@@ -81,8 +82,8 @@ create_table()
 
 # Create operation
 # user
-@app.post("/user/")
-def create_user(user: User):
+@app.post("/api/v1/users/")
+def create_user_endpoint(user: User):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
@@ -90,8 +91,8 @@ def create_user(user: User):
         conn.commit()
     return {"message": "User created successfully"}
 
-@app.get("/user/{user_id}")
-def read_user(user_id: int):
+@app.get("/api/v1/users/{user_id}")
+def read_user_endpoint(user_id: int):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
@@ -102,8 +103,8 @@ def read_user(user_id: int):
         else:
             return {"id": user[0], "name": user[1], "birthdate": user[2], "height": user[3], "password": user[4]}
 
-@app.put("/user/{user_id}")
-def update_user(user_id: int, user: User):
+@app.put("/api/v1/users/{user_id}")
+def update_user_endpoint(user_id: int, user: User):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
@@ -111,6 +112,15 @@ def update_user(user_id: int, user: User):
                     (user.name, user.birthdate, str(user.height), user.password.get_secret_value(), user_id))
         conn.commit()
     return {"message": "User updated successfully"}
+
+@app.delete("/api/v1/users/{user_id}")
+def delete_user_endpoint(user_id: int):
+    conn = create_connection()
+    with conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM Users WHERE id=?", (user_id,))
+        conn.commit()
+    return {"message": "User deleted successfully"}
 
 @app.delete("/user/{user_id}")
 def delete_user(user_id: int):
@@ -121,17 +131,17 @@ def delete_user(user_id: int):
         conn.commit()
     return {"message": "User deleted successfully"}
 # healthmetrics
-@app.post("/healthmetric/")
-def create_healthmetric(healthmetric: Healthmetrics):
+@app.post("/api/v1/healthmetrics/")
+def create_healthmetric_endpoint(healthmetric: Healthmetrics):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
         cur.execute("INSERT INTO healthmetrics VALUES (?, ?, ?, ?)", (healthmetric.id, healthmetric.timestamp, str(healthmetric.bloodpressure), str(healthmetric.weight)))
         conn.commit()
     return {"message": "Health metric created successfully"}
-# Read operation for healthmetrics
-@app.get("/healthmetric/{healthmetric_id}")
-def read_healthmetric(healthmetric_id: int):
+
+@app.get("/api/v1/healthmetrics/{healthmetric_id}")
+def read_healthmetric_endpoint(healthmetric_id: int):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
@@ -142,9 +152,8 @@ def read_healthmetric(healthmetric_id: int):
         else:
             return {"id": healthmetric[0], "timestamp": healthmetric[1], "bloodpressure": healthmetric[2], "weight": healthmetric[3]}
 
-# Update operation for healthmetrics
-@app.put("/healthmetric/{healthmetric_id}")
-def update_healthmetric(healthmetric_id: int, healthmetric: Healthmetrics):
+@app.put("/api/v1/healthmetrics/{healthmetric_id}")
+def update_healthmetric_endpoint(healthmetric_id: int, healthmetric: Healthmetrics):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
@@ -153,19 +162,17 @@ def update_healthmetric(healthmetric_id: int, healthmetric: Healthmetrics):
         conn.commit()
     return {"message": "Health metric updated successfully"}
 
-# Delete operation for healthmetrics
-@app.delete("/healthmetric/{healthmetric_id}")
-def delete_healthmetric(healthmetric_id: int):
+@app.delete("/api/v1/healthmetrics/{healthmetric_id}")
+def delete_healthmetric_endpoint(healthmetric_id: int):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
         cur.execute("DELETE FROM healthmetrics WHERE id=?", (healthmetric_id,))
         conn.commit()
     return {"message": "Health metric deleted successfully"}
-
 #emotion
-@app.post("/emotion/")
-def create_emotion(emotion: Emotion):
+@app.post("/api/v1/emotions/")
+def create_emotion_endpoint(emotion: Emotion):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
@@ -173,9 +180,8 @@ def create_emotion(emotion: Emotion):
         conn.commit()
     return {"message": "Emotion created successfully"}
 
-# Read operation for emotions
-@app.get("/emotion/{emotion_id}")
-def read_emotion(emotion_id: int):
+@app.get("/api/v1/emotions/{emotion_id}")
+def read_emotion_endpoint(emotion_id: int):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
@@ -186,9 +192,8 @@ def read_emotion(emotion_id: int):
         else:
             return {"id": emotion[0], "img": emotion[1], "createdAt": emotion[2]}
 
-# Update operation for emotions
-@app.put("/emotion/{emotion_id}")
-def update_emotion(emotion_id: int, emotion: Emotion):
+@app.put("/api/v1/emotions/{emotion_id}")
+def update_emotion_endpoint(emotion_id: int, emotion: Emotion):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
@@ -197,9 +202,8 @@ def update_emotion(emotion_id: int, emotion: Emotion):
         conn.commit()
     return {"message": "Emotion updated successfully"}
 
-# Delete operation for emotions
-@app.delete("/emotion/{emotion_id}")
-def delete_emotion(emotion_id: int):
+@app.delete("/api/v1/emotions/{emotion_id}")
+def delete_emotion_endpoint(emotion_id: int):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
