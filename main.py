@@ -87,7 +87,8 @@ def create_user_endpoint(user: User):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
-        cur.execute("INSERT INTO Users VALUES (?, ?, ?, ?, ?)", (user.id, user.name, user.birthdate, str(user.height), user.password.get_secret_value()))
+        cur.execute("INSERT INTO Users VALUES (?, ?, ?, ?, ?, ?)", 
+                    (user.id, user.name, user.birthdate, str(user.height), user.email, user.password.get_secret_value()))
         conn.commit()
     return {"message": "User created successfully"}
 
@@ -101,15 +102,15 @@ def read_user_endpoint(user_id: int):
         if user is None:
             return {"error": "User not found"}
         else:
-            return {"id": user[0], "name": user[1], "birthdate": user[2], "height": user[3], "password": user[4]}
+            return {"id": user[0], "name": user[1], "birthdate": user[2], "height": user[3], "email": user[4], "password": user[5]}
 
 @app.put("/api/v1/users/{user_id}")
 def update_user_endpoint(user_id: int, user: User):
     conn = create_connection()
     with conn:
         cur = conn.cursor()
-        cur.execute("UPDATE Users SET name=?, birthdate=?, height=?, password=? WHERE id=?", 
-                    (user.name, user.birthdate, str(user.height), user.password.get_secret_value(), user_id))
+        cur.execute("UPDATE Users SET name=?, birthdate=?, height=?, email=?, password=? WHERE id=?", 
+                    (user.name, user.birthdate, str(user.height), user.email, user.password.get_secret_value(), user_id))
         conn.commit()
     return {"message": "User updated successfully"}
 
@@ -122,14 +123,6 @@ def delete_user_endpoint(user_id: int):
         conn.commit()
     return {"message": "User deleted successfully"}
 
-@app.delete("/user/{user_id}")
-def delete_user(user_id: int):
-    conn = create_connection()
-    with conn:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM Users WHERE id=?", (user_id,))
-        conn.commit()
-    return {"message": "User deleted successfully"}
 # healthmetrics
 @app.post("/api/v1/healthmetrics/")
 def create_healthmetric_endpoint(healthmetric: Healthmetrics):
